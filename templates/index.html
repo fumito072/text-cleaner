@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テキストクリーナー</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .preview-box {
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .char-tag {
+            margin: 2px;
+            padding: 2px 8px;
+            background-color: #e9ecef;
+            border-radius: 15px;
+            display: inline-block;
+        }
+        .char-tag .remove {
+            cursor: pointer;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">テキストクリーナー</h1>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="textInput" class="form-label">テキストを入力またはファイルをアップロード</label>
+                    <textarea class="form-control" id="textInput" rows="10"></textarea>
+                    <input type="file" class="form-control mt-2" id="fileInput" accept=".txt">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="charInput" class="form-label">削除したい文字を入力</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="charInput">
+                        <button class="btn btn-primary" id="addChar">追加</button>
+                    </div>
+                </div>
+                
+                <div id="charTags" class="mb-3"></div>
+                
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary" id="processBtn">処理を実行</button>
+                    <button class="btn btn-success" id="downloadBtn">結果をダウンロード</button>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <h3>プレビュー</h3>
+                <div id="preview" class="preview-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const textInput = document.getElementById('textInput');
+        const fileInput = document.getElementById('fileInput');
+        const charInput = document.getElementById('charInput');
+        const addCharBtn = document.getElementById('addChar');
+        const charTags = document.getElementById('charTags');
+        const processBtn = document.getElementById('processBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const preview = document.getElementById('preview');
+        
+        let charsToRemove = [];
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    textInput.value = e.target.result;
+                };
+                reader.readAsText(file);
+            }
+        });
+        
+        addCharBtn.addEventListener('click', () => {
+            const char = charInput.value.trim();
+            if (char && !charsToRemove.includes(char)) {
+                charsToRemove.push(char);
+                updateCharTags();
+                charInput.value = '';
+            }
+        });
+        
+        function updateCharTags() {
+            charTags.innerHTML = charsToRemove.map(char => `
+                <span class="char-tag">
+                    ${char}
+                    <span class="remove" onclick="removeChar('${char}')">×</span>
+                </span>
+            `).join('');
+        }
+        
+        window.removeChar = (char) => {
+            charsToRemove = charsToRemove.filter(c => c !== char);
+            updateCharTags();
+        };
+        
+        processBtn.addEventListener('click', async () => {
+            const text = textInput.value;
+            if (!text) {
+                alert('テキストを入力してください');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        chars: charsToRemove
+                    })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    preview.textContent = data.result;
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                alert('エラーが発生しました');
+                console.error(error);
+            }
+        });
+        
+        downloadBtn.addEventListener('click', async () => {
+            const text = textInput.value;
+            if (!text) {
+                alert('テキストを入力してください');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        chars: charsToRemove
+                    })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'cleaned_text.txt';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                } else {
+                    const data = await response.json();
+                    alert(data.error);
+                }
+            } catch (error) {
+                alert('エラーが発生しました');
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html> 
