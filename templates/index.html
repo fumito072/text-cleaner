@@ -48,6 +48,9 @@
                         <input type="text" class="form-control" id="charInput">
                         <button class="btn btn-primary" id="addChar">追加</button>
                     </div>
+                    <div class="mt-2">
+                        <button class="btn btn-outline-secondary btn-sm" id="addSpaceBtn">スペースを追加</button>
+                    </div>
                 </div>
                 
                 <div id="charTags" class="mb-3"></div>
@@ -77,6 +80,7 @@
         const fileInput = document.getElementById('fileInput');
         const charInput = document.getElementById('charInput');
         const addCharBtn = document.getElementById('addChar');
+        const addSpaceBtn = document.getElementById('addSpaceBtn');
         const charTags = document.getElementById('charTags');
         const processBtn = document.getElementById('processBtn');
         const downloadBtn = document.getElementById('downloadBtn');
@@ -106,10 +110,18 @@
             }
         });
         
+        addSpaceBtn.addEventListener('click', () => {
+            const space = ' ';
+            if (!charsToRemove.includes(space)) {
+                charsToRemove.push(space);
+                updateCharTags();
+            }
+        });
+        
         function updateCharTags() {
             charTags.innerHTML = charsToRemove.map(char => `
                 <span class="char-tag">
-                    ${char}
+                    ${char === ' ' ? 'スペース' : char}
                     <span class="remove" onclick="removeChar('${char}')">×</span>
                 </span>
             `).join('');
