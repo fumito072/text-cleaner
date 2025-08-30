@@ -43,6 +43,15 @@
                 </div>
                 
                 <div class="mb-3">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="removeTimeCheck">
+                        <label class="form-check-label" for="removeTimeCheck">
+                            時間表記を削除 (0:10, 14:03, 13:50 など)
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
                     <label for="charInput" class="form-label">削除したい文字を入力</label>
                     <div class="input-group">
                         <input type="text" class="form-control" id="charInput">
@@ -87,6 +96,7 @@
         const preview = document.getElementById('preview');
         const charCount = document.getElementById('charCount');
         const copyBtn = document.getElementById('copyBtn');
+        const removeTimeCheck = document.getElementById('removeTimeCheck');
         
         let charsToRemove = [];
         
@@ -147,7 +157,8 @@
                     },
                     body: JSON.stringify({
                         text: text,
-                        chars: charsToRemove
+                        chars: charsToRemove,
+                        removeTime: removeTimeCheck.checked
                     })
                 });
                 
@@ -180,7 +191,8 @@
                     },
                     body: JSON.stringify({
                         text: text,
-                        chars: charsToRemove
+                        chars: charsToRemove,
+                        removeTime: removeTimeCheck.checked
                     })
                 });
                 

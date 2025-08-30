@@ -26,6 +26,24 @@ def remove_chars(text: str, chars_to_remove: list) -> str:
         text = text.replace(char, '')
     return text
 
+def remove_time_patterns(text: str) -> str:
+    """
+    文字列から時間表記を削除する関数
+    
+    Args:
+        text: 元の文字列
+    
+    Returns:
+        時間表記を削除した文字列
+    """
+    import re
+    
+    # 時間表記を削除（0:10, 14:03, 13:50 などの形式）
+    # 1桁または2桁の数字:1桁または2桁の数字
+    text = re.sub(r'\b\d{1,2}:\d{1,2}\b', '', text)
+    
+    return text
+
 def remove_newlines(text: str) -> str:
     """
     文字列から改行文字、その表記（\n）、時間表記を削除する関数
@@ -36,15 +54,20 @@ def remove_newlines(text: str) -> str:
     Returns:
         改行文字、\n、時間表記を削除した文字列
     """
+    import re
+    
     # まず実際の改行文字を削除
     text = text.replace('\n', '')
     # 文字列としての\nを削除
     text = text.replace('\\n', '')
     # 読点を削除
     text = text.replace('、', '')
-    # 時間表記（xx:xx）を削除
-    import re
-    text = re.sub(r'\d+:\d+', '', text)
+    
+    # 時間表記を削除（より柔軟なパターン）
+    # 0:10, 14:03, 13:50 などの形式に対応
+    # 1桁または2桁の数字:1桁または2桁の数字
+    text = re.sub(r'\b\d{1,2}:\d{1,2}\b', '', text)
+    
     return text
 
 def read_file(file_path: str) -> str:
