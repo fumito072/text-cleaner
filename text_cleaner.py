@@ -70,6 +70,50 @@ def remove_newlines(text: str) -> str:
     
     return text
 
+def split_text_by_length(text: str, max_length: int = 1000) -> str:
+    """
+    文字列を指定した文字数で分割する関数
+    
+    Args:
+        text: 元の文字列
+        max_length: 分割する最大文字数（デフォルト: 1000）
+    
+    Returns:
+        分割された文字列（改行で区切られる）
+    """
+    if len(text) <= max_length:
+        return text
+    
+    result = []
+    current_pos = 0
+    
+    while current_pos < len(text):
+        # 最大文字数分を取得
+        end_pos = min(current_pos + max_length, len(text))
+        chunk = text[current_pos:end_pos]
+        
+        # 文の途中で切れないように、句読点で調整
+        if end_pos < len(text):
+            # 句読点を探す（。、！？）
+            last_punctuation = -1
+            for i in range(len(chunk) - 1, -1, -1):
+                if chunk[i] in '。、！？':
+                    last_punctuation = i
+                    break
+            
+            # 句読点が見つかった場合、その位置で分割
+            if last_punctuation > max_length * 0.7:  # 70%以上進んでいれば句読点で分割
+                chunk = chunk[:last_punctuation + 1]
+                current_pos += last_punctuation + 1
+            else:
+                current_pos = end_pos
+        else:
+            current_pos = end_pos
+        
+        result.append(chunk)
+    
+    return '\n\n'.join(result)
+
 def read_file(file_path: str) -> str:
     """
     ファイルから文章を読み込む関数

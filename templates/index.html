@@ -49,6 +49,17 @@
                             時間表記を削除 (0:10, 14:03, 13:50 など)
                         </label>
                     </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="splitTextCheck">
+                        <label class="form-check-label" for="splitTextCheck">
+                            文字数で文章を分割
+                        </label>
+                    </div>
+                    <div id="splitLengthContainer" class="mt-2" style="display: none;">
+                        <label for="splitLengthInput" class="form-label">分割する文字数</label>
+                        <input type="number" class="form-control" id="splitLengthInput" value="1000" min="100" max="10000">
+                        <div class="form-text">句読点で適切に分割されます</div>
+                    </div>
                 </div>
                 
                 <div class="mb-3">
@@ -97,6 +108,9 @@
         const charCount = document.getElementById('charCount');
         const copyBtn = document.getElementById('copyBtn');
         const removeTimeCheck = document.getElementById('removeTimeCheck');
+        const splitTextCheck = document.getElementById('splitTextCheck');
+        const splitLengthContainer = document.getElementById('splitLengthContainer');
+        const splitLengthInput = document.getElementById('splitLengthInput');
         
         let charsToRemove = [];
         
@@ -142,6 +156,15 @@
             updateCharTags();
         };
         
+        // 文字数分割チェックボックスのイベントリスナー
+        splitTextCheck.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                splitLengthContainer.style.display = 'block';
+            } else {
+                splitLengthContainer.style.display = 'none';
+            }
+        });
+        
         processBtn.addEventListener('click', async () => {
             const text = textInput.value;
             if (!text) {
@@ -158,7 +181,9 @@
                     body: JSON.stringify({
                         text: text,
                         chars: charsToRemove,
-                        removeTime: removeTimeCheck.checked
+                        removeTime: removeTimeCheck.checked,
+                        splitText: splitTextCheck.checked,
+                        splitLength: parseInt(splitLengthInput.value) || 1000
                     })
                 });
                 
@@ -192,7 +217,9 @@
                     body: JSON.stringify({
                         text: text,
                         chars: charsToRemove,
-                        removeTime: removeTimeCheck.checked
+                        removeTime: removeTimeCheck.checked,
+                        splitText: splitTextCheck.checked,
+                        splitLength: parseInt(splitLengthInput.value) || 1000
                     })
                 });
                 
